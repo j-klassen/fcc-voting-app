@@ -1,0 +1,9 @@
+### Vagrant ###
+.vagrant/
+
+node_modules
+sandbox
+dist
+.env
+.DS_Store
+*.log
