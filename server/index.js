@@ -67,33 +67,6 @@ const api = express.Router();
 routes.app(app, passport);
 routes.api(api);
 
-// Memory data
-const users = [
-	{ _id: ObjectId(), username: 'xander' },
-	{ _id: ObjectId(), username: 'bitknight' },
-	{ _id: ObjectId(), username: 'ptj' }
-];
-
-api.get('/profile', (req, res) => {
-	res.json(users[1]);
-});
-
-api.get('/users', (req, res) => {
-	res.json(users);
-});
-
-api.get('/users/:id', (req, res) => {
-	let found = users.filter((user) => {
-		return user._id.equals(req.params.id);
-	});
-
-	if (found) {
-		res.json(found.pop());
-	} else {
-		res.status(404).json({ message: 'User not found' });
-	}
-});
-
 app.use('/api', api);
 
 // This is fired every time the server side receives a request

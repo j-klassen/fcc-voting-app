@@ -5,8 +5,9 @@ import { fetchProfile } from '../actions';
 
 class PollsIndex extends Component {
 	static propTypes = {
-		profile: React.PropTypes.object,
-		fetchProfile: React.PropTypes.func
+		profile: React.PropTypes.object.isRequired,
+		fetchProfile: React.PropTypes.func.isRequired,
+		logout: React.PropTypes.func.isRequired
 	}
 
 	// Get data on first render
@@ -28,7 +29,7 @@ class PollsIndex extends Component {
 								<span className="icon-bar"></span>
 								<span className="icon-bar"></span>
 							</button>
-							<Link to="/" className="navbar-brand">FCC Users</Link>
+							<Link to="/" className="navbar-brand">FCC Polls</Link>
 						</div>
 
 						<div className="collapse navbar-collapse" id="header-menu">
@@ -61,7 +62,7 @@ class PollsIndex extends Component {
 							role="button" aria-haspopup="true"
 							aria-expanded="false">{ profile.github.displayName } <span className="caret"></span></a>
 						<ul className="dropdown-menu">
-							<li><a href="/logout">Logout</a></li>
+							<li onClick={this.props.logout()}><a href="/logout">Logout</a></li>
 						</ul>
 					</li>
 				</ul>

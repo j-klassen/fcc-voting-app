@@ -10,17 +10,22 @@ export default class App extends Component {
 	}
 
 	componentDidMount() {
-		console.log(cookie.load('token'));
+		// console.log(cookie.load('token'));
+		localStorage.setItem('token', cookie.load('token'));
 	}
 
 	render() {
 		return (
 			<div>
-				<Header />
+				<Header logout={this.logout} />
 				<section className="content">
 					{ this.props.children }
 				</section>
 			</div>
 		);
+	}
+	
+	logout() {
+		localStorage.clear();
 	}
 }

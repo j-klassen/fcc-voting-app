@@ -1,27 +1,27 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { fetchUser } from '../actions';
+import { fetchPoll } from '../actions';
 
-class UserShow extends Component {
+class PollShow extends Component {
 	static propTypes = {
-		user: PropTypes.object.isRequired,
+		poll: PropTypes.object.isRequired,
 		params: PropTypes.object.isRequired,
-		fetchUser: PropTypes.func.isRequired
+		fetchPoll: PropTypes.func.isRequired
 	}
 
 	// Get data on first render
 	componentWillMount() {
-		this.props.fetchUser(this.props.params.id);
+		this.props.fetchPoll(this.props.params.id);
 	}
 
 	render() {
-		const { user } = this.props;
+		const { poll } = this.props;
 
 		return (
 			<div className="container">
 				<div className="row">
 					<div className="col-xs-12">
-						Show user { user.username }
+						Show user { poll.title }
 					</div>
 
 					<div className="col-xs-12">
@@ -45,7 +45,7 @@ class UserShow extends Component {
 }
 
 function mapStateToProps(state) {
-	return { user: state.user };
+	return { poll: state.poll };
 }
 
-export default connect(mapStateToProps, { fetchUser })(UserShow);
+export default connect(mapStateToProps, { fetchPoll })(PollShow);

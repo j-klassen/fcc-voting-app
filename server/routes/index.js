@@ -6,6 +6,8 @@ import { tokenForUser } from '../lib/jwt';
 
 const requireJWT = (req, res, next) => {
 	passport.authenticate('jwt', { session: false }, (err, user) => {	
+		console.log(err, user);
+		
 		if (err) return next(err);
 		// User does not exist
 		if (!user) return next(new APIResponse(401, new Unauthorized()));
@@ -106,11 +108,7 @@ function api(router) {
 	});
 
 	router.get('/profile', requireJWT, (req, res) => {
-		res.json({
-			error: 'Not logged in'
-		});
-	}, (req, res) => {
-		res.json(JSON.parse(JSON.stringify(req.user)));
+		res.json(new APIResponse(200, null, JSON.parse(JSON.stringify(req.user))));
 	});
 }
 
