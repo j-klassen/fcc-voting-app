@@ -1,5 +1,5 @@
 import { Strategy as GithubStrategy } from 'passport-github';
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import { Strategy as JwtStrategy } from 'passport-jwt';
 import User from '../models/user';
 import Auth from './auth';
 import APIResponse from '../lib/apiResponse';
@@ -10,17 +10,28 @@ export default function(passport) {
 	// ===========================
 	// JWT
 	// ===========================
+	
+	// Cookie extractor
+	const cookieExtractor = (req) => {
+		let token = null;
+		if (req && req.cookies) {
+			token = req.cookies['token'];
+		}
+		
+		return token;
+	};
 
 	const jwtOptions = {
-		// Pull JWT token from request header `authorization`
-		jwtFromRequest: ExtractJwt.fromHeader('authorization'),
+		jwtFromRequest: cookieExtractor,
 		secretOrKey: process.env.JWT_SECRET
 	};
 
 	passport.use(new JwtStrategy(jwtOptions, (payload, done) => {
-		// payload is decoded jwt
-		// make sure the user id is in the database
-		User.findById(payload.sub, (err, user) => {
+		// `payload` is decoded jwt
+		// Make sure the user id is in the database
+		// At this point, `payload.sub` is a POJO so the mongoose .id accessor won't
+		// work as expected.
+		User.findById(payload.sub._id, (err, user) => {
 			if (err) return done(err);
 			// No err but user doesn't exist
 			if (!user) return done(null, false);

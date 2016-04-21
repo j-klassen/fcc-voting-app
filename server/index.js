@@ -3,8 +3,9 @@ import https from 'https';
 import daplie from 'localhost.daplie.com-certificates';
 import express from 'express';
 import morgan from 'morgan';
-import { default as bodyParser } from 'body-parser';
-import { Types } from 'mongoose';
+import jwt from 'express-jwt';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
@@ -25,17 +26,18 @@ import { default as reactRoutes } from '../common/routes';
 // Database
 import './resources/database';
 
-configPassport(passport);
-
-const ObjectId = Types.ObjectId;
 const webpackConfig = require(path.join(__dirname, '../webpack.config'));
 const port = process.env.PORT || 3000;
 const env = process.env.NODE_ENV || 'development';
 const app = express();
 const compiler = webpack(webpackConfig);
 
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(passport.initialize());
+
+configPassport(passport);
 
 // Webpack middleware has a heavy init time. Disable for tests.
 if (env === 'development') {
@@ -70,7 +72,14 @@ routes.api(api);
 app.use('/api', api);
 
 // This is fired every time the server side receives a request
-app.use(handleRender);
+app.use(jwt({
+	secret: process.env.JWT_SECRET,
+	credentialsRequired: false,
+	requestProperty: 'token',
+	getToken: (req) => {
+		return req.cookies['token'];
+	}
+}), handleRender);
 
 // Error middleware
 app.use(errorHandler);
@@ -84,6 +93,13 @@ function handleRender(req, res) {
 		} else if (renderProps) {
 			// Compile an initial state
 			const initialState = { };
+			
+			if (req.token) {
+				initialState.auth = {
+					user: req.token.sub,
+					isAuthenticated: true
+				};
+			}
 
 			// Create a new Redux store instance
 			const store = configureStore(initialState);

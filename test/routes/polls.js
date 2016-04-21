@@ -82,7 +82,8 @@ describe('Polls API', () => {
 		before(async function (done) {
 			try {
 				poll = await factory.create('Poll');
-				token = tokenForUser({ id: poll.user });
+				let user = await User.findById(poll.user);
+				token = tokenForUser(user);
 
 				done();
 			} catch (err) {
@@ -104,7 +105,7 @@ describe('Polls API', () => {
 		it('can get my own polls', (done) => {
 			request(app)
 			.get('/api/polls/mine')
-			.set('Authorization', token)
+			.set('Cookie', `token=${token}`)
 			.expect('Content-Type', /json/)
 			.expect(200)
 			.end((err, res) => {

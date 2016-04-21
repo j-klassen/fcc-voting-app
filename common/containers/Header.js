@@ -1,18 +1,10 @@
-import React, { Component } from 'react';
+import React, { PropTypes, Component } from 'react';
 import { Link } from 'react-router';
 import { connect } from 'react-redux';
-import { fetchProfile } from '../actions';
 
-class PollsIndex extends Component {
+class Header extends Component {
 	static propTypes = {
-		profile: React.PropTypes.object.isRequired,
-		fetchProfile: React.PropTypes.func.isRequired,
-		logout: React.PropTypes.func.isRequired
-	}
-
-	// Get data on first render
-	componentDidMount() {
-		this.props.fetchProfile();
+		auth: PropTypes.object.isRequired
 	}
 
 	render() {
@@ -42,17 +34,17 @@ class PollsIndex extends Component {
 	}
 
 	renderDisplayName() {
-		if (this.props.profile.github) {
-			return this.props.profile.github.displayName;
+		if (this.props.auth.isAuthenticated) {
+			return this.props.auth.user.github.displayName;
 		} else {
 			return '';
 		}
 	}
 
 	renderNav() {
-		const profile = this.props.profile;
+		const { auth } = this.props;
 
-		if (profile.github) {
+		if (auth.isAuthenticated) {
 			return (
 				<ul className="nav navbar-nav navbar-right">
 					<li><Link to="/polls/mine">My Polls</Link></li>
@@ -60,9 +52,9 @@ class PollsIndex extends Component {
 					<li className="dropdown">
 						<a href="#" className="dropdown-toggle" data-toggle="dropdown"
 							role="button" aria-haspopup="true"
-							aria-expanded="false">{ profile.github.displayName } <span className="caret"></span></a>
+							aria-expanded="false">{ auth.user.github.displayName } <span className="caret"></span></a>
 						<ul className="dropdown-menu">
-							<li onClick={this.props.logout()}><a href="/logout">Logout</a></li>
+							<li><Link to="logout">Logout</Link></li>
 						</ul>
 					</li>
 				</ul>
@@ -78,7 +70,7 @@ class PollsIndex extends Component {
 }
 
 function mapStateToProps(state) {
-	return { profile: state.profile };
+	return { auth: state.auth };
 }
 
-export default connect(mapStateToProps, { fetchProfile })(PollsIndex);
+export default connect(mapStateToProps)(Header);

@@ -1,11 +1,11 @@
 import { combineReducers } from 'redux';
 
-import profile from './profile';
 import poll from './poll';
 import polls from './polls';
+import auth from './auth';
 
 const rootReducer = combineReducers({
-	profile,
+	auth,
 	poll,
 	polls
 });

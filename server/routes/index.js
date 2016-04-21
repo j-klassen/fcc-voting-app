@@ -5,9 +5,7 @@ import Poll from '../models/poll';
 import { tokenForUser } from '../lib/jwt';
 
 const requireJWT = (req, res, next) => {
-	passport.authenticate('jwt', { session: false }, (err, user) => {	
-		console.log(err, user);
-		
+	passport.authenticate('jwt', { session: false }, (err, user) => {
 		if (err) return next(err);
 		// User does not exist
 		if (!user) return next(new APIResponse(401, new Unauthorized()));
@@ -25,21 +23,38 @@ function app(router, passport) {
 	// Send to Github for auth
 	router.get('/auth/github', passport.authenticate('github', {
 		session: false,
-		scope : 'user:email'
+		scope : ['user:email']
 	}));
 
-	const handleGithubCallback = passport.authenticate('github', {
-		session: false,
-		failureRedirect: '/'
-	});
-
+	const handleGithubCallback = (req, res, next) => {
+		passport.authenticate('github', {
+			session: false,
+			failureRedirect: '/'
+		}, (err, user) => {
+			if (err) {
+				console.error(err);
+				return next(err);
+			}
+			
+			if (!user) {
+				return res.status(401).json({ message: 'auth failed' });
+			}
+			
+			req.login(user, { session: false }, loginErr => {
+				if (loginErr) {
+					console.error(loginErr);
+					return next(loginErr);
+				}
+				
+				const token = tokenForUser(user);
+				res.cookie('token', token, { secure: true, httpOnly: true });
+				res.redirect('/');
+			});
+		})(req, res, next);
+	};
+		
 	// Handle callback after Github has authenticated the user.
-	router.get('/auth/github/callback', handleGithubCallback, (req, res) => {
-		// Redirect and attach token to URL
-		// res.redirect(`/?token=${tokenForUser(req.user)}`);
-		res.cookie('token', tokenForUser(req.user), { secure: true });
-		res.redirect('/');
-	});
+	router.get('/auth/github/callback', handleGithubCallback);
 
 	// Unlinking account
 	router.get('/unlink/github', requireJWT, (req, res, next) => {
@@ -54,6 +69,11 @@ function app(router, passport) {
 
 			res.end();
 		});
+	});
+	
+	router.post('/auth/logout', (req, res) => {
+		res.clearCookie('token');
+		res.json(new APIResponse(200, null, {}));
 	});
 }
 
